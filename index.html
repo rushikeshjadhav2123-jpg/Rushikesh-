@@ -1,1 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemeStudio Pro - Ultimate Meme Generator</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Impact&family=Oswald:wght@500;700&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
 
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="logo">
+      <i class="fa-solid fa-face-grin-tears logo-icon"></i>
+      <span>MemeStudio <strong>Pro</strong></span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" id="btn-random-meme">
+        <i class="fa-solid fa-dice"></i> Random Template
+      </button>
+      <button class="btn btn-primary btn-sm" id="btn-export-quick">
+        <i class="fa-solid fa-download"></i> Export Meme
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR: Library & Templates -->
+    <aside class="sidebar-left">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-templates"><i class="fa-solid fa-images"></i> Templates</button>
+        <button class="tab-btn" data-tab="tab-stickers"><i class="fa-solid fa-icons"></i> Stickers</button>
+        <button class="tab-btn" data-tab="tab-upload"><i class="fa-solid fa-upload"></i> Upload</button>
+      </div>
+
+      <!-- Tab Content: Templates -->
+      <div class="tab-content active" id="tab-templates">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="template-search" placeholder="Search templates..." />
+        </div>
+        <div class="template-categories" id="template-categories">
+          <button class="category-chip active" data-category="all">All</button>
+          <button class="category-chip" data-category="trending">Trending</button>
+          <button class="category-chip" data-category="classic">Classic</button>
+          <button class="category-chip" data-category="reaction">Reaction</button>
+        </div>
+        <div class="template-grid" id="template-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab Content: Stickers -->
+      <div class="tab-content" id="tab-stickers">
+        <div class="sticker-grid" id="sticker-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab Content: Upload -->
+      <div class="tab-content" id="tab-upload">
+        <div class="upload-zone" id="upload-zone">
+          <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+          <p class="upload-title">Drag & Drop Image Here</p>
+          <p class="upload-sub">or click to browse from device</p>
+          <input type="file" id="file-input" accept="image/*" hidden />
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER CANVAS WORKSPACE -->
+    <main class="canvas-workspace">
+      <div class="canvas-toolbar">
+        <div class="toolbar-group">
+          <label><i class="fa-solid fa-aspect-ratio"></i> Ratio:</label>
+          <select id="aspect-ratio-select">
+            <option value="original">Original</option>
+            <option value="1:1">1:1 Square</option>
+            <option value="9:16">9:16 Story</option>
+            <option value="16:9">16:9 Banner</option>
+            <option value="4:5">4:5 Portrait</option>
+          </select>
+        </div>
+
+        <div class="toolbar-group">
+          <button class="btn-icon" id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+          <button class="btn-icon" id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+          <button class="btn-icon" id="btn-reset-zoom" title="Reset Zoom"><i class="fa-solid fa-expand"></i></button>
+        </div>
+
+        <div class="toolbar-group">
+          <button class="btn-icon danger" id="btn-clear-all" title="Clear Canvas"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+      </div>
+
+      <!-- Canvas Wrapper -->
+      <div class="canvas-container" id="canvas-container">
+        <canvas id="meme-canvas"></canvas>
+      </div>
+
+      <!-- Quick Floating Add Actions -->
+      <div class="quick-add-bar">
+        <button class="btn btn-secondary btn-sm" id="btn-add-text-top">
+          <i class="fa-solid fa-plus"></i> Add Top Text
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-add-text-bottom">
+          <i class="fa-solid fa-plus"></i> Add Bottom Text
+        </button>
+        <button class="btn btn-accent btn-sm" id="btn-ai-caption">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Caption Idea
+        </button>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: Layer & Element Inspector Controls -->
+    <aside class="sidebar-right">
+      <div class="inspector-section">
+        <h3 class="section-title"><i class="fa-solid fa-layer-group"></i> Layer Manager</h3>
+        <div class="layers-list" id="layers-list">
+          <p class="empty-msg">No active elements</p>
+        </div>
+      </div>
+
+      <!-- Text Editing Panel (Shows when Text Selected) -->
+      <div class="inspector-section" id="text-controls-panel">
+        <h3 class="section-title"><i class="fa-solid fa-font"></i> Text Properties</h3>
+        
+        <div class="control-group">
+          <label>Content</label>
+          <textarea id="text-input" rows="2" placeholder="Type text here..."></textarea>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group half">
+            <label>Font Family</label>
+            <select id="text-font">
+              <option value="Impact">Impact</option>
+              <option value="Anton">Anton</option>
+              <option value="Bebas Neue">Bebas Neue</option>
+              <option value="Oswald">Oswald</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Arial Black">Arial Black</option>
+            </select>
+          </div>
+          <div class="control-group half">
+            <label>Size</label>
+            <input type="number" id="text-size" min="12" max="150" value="48" />
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group third">
+            <label>Fill</label>
+            <input type="color" id="text-fill-color" value="#FFFFFF" />
+          </div>
+          <div class="control-group third">
+            <label>Stroke</label>
+            <input type="color" id="text-stroke-color" value="#000000" />
+          </div>
+          <div class="control-group third">
+            <label>Stroke W</label>
+            <input type="number" id="text-stroke-width" min="0" max="20" value="5" />
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group half">
+            <label>Bg Box</label>
+            <input type="color" id="text-bg-color" value="#000000" />
+          </div>
+          <div class="control-group half align-end">
+            <label class="checkbox-label">
+              <input type="checkbox" id="text-bg-enable" /> Enable Bg
+            </label>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group half">
+            <label>Align</label>
+            <div class="btn-toggle-group">
+              <button class="btn-toggle active" data-align="center"><i class="fa-solid fa-align-center"></i></button>
+              <button class="btn-toggle" data-align="left"><i class="fa-solid fa-align-left"></i></button>
+              <button class="btn-toggle" data-align="right"><i class="fa-solid fa-align-right"></i></button>
+            </div>
+          </div>
+          <div class="control-group half">
+            <label>Transform</label>
+            <div class="btn-toggle-group">
+              <button class="btn-toggle active" id="btn-text-uppercase">AA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Filters & Adjustments -->
+      <div class="inspector-section">
+        <h3 class="section-title"><i class="fa-solid fa-sliders"></i> Image Adjustments</h3>
+        
+        <div class="slider-control">
+          <div class="slider-label"><span>Brightness</span><span id="val-brightness">100%</span></div>
+          <input type="range" id="filter-brightness" min="0" max="200" value="100" />
+        </div>
+
+        <div class="slider-control">
+          <div class="slider-label"><span>Contrast</span><span id="val-contrast">100%</span></div>
+          <input type="range" id="filter-contrast" min="0" max="200" value="100" />
+        </div>
+
+        <div class="slider-control">
+          <div class="slider-label"><span>Saturation</span><span id="val-saturation">100%</span></div>
+          <input type="range" id="filter-saturation" min="0" max="200" value="100" />
+        </div>
+
+        <div class="slider-control">
+          <div class="slider-label"><span>Blur</span><span id="val-blur">0px</span></div>
+          <input type="range" id="filter-blur" min="0" max="10" value="0" step="0.5" />
+        </div>
+
+        <div class="control-row">
+          <button class="btn btn-outline btn-sm half" id="btn-flip-h"><i class="fa-solid fa-arrows-left-right"></i> Flip H</button>
+          <button class="btn btn-outline btn-sm half" id="btn-flip-v"><i class="fa-solid fa-arrows-up-down"></i> Flip V</button>
+        </div>
+      </div>
+
+      <!-- Watermark Settings -->
+      <div class="inspector-section">
+        <h3 class="section-title"><i class="fa-solid fa-copyright"></i> Watermark</h3>
+        <div class="control-group">
+          <input type="text" id="watermark-input" placeholder="e.g. @my_meme_page" />
+        </div>
+      </div>
+
+      <!-- Export Panel -->
+      <div class="inspector-section export-section">
+        <h3 class="section-title"><i class="fa-solid fa-file-export"></i> Export Options</h3>
+        
+        <div class="control-row">
+          <div class="control-group half">
+            <label>Format</label>
+            <select id="export-format">
+              <option value="png">PNG (High Quality)</option>
+              <option value="jpeg">JPEG (Compressed)</option>
+              <option value="webp">WEBP (Modern)</option>
+            </select>
+          </div>
+          <div class="control-group half">
+            <label>Quality</label>
+            <select id="export-quality">
+              <option value="1.0">100% High</option>
+              <option value="0.8">80% Medium</option>
+              <option value="0.5">50% Low</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-success btn-block" id="btn-download">
+          <i class="fa-solid fa-download"></i> Download Meme
+        </button>
+        <button class="btn btn-secondary btn-block" id="btn-copy-clipboard">
+          <i class="fa-solid fa-copy"></i> Copy to Clipboard
+        </button>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Main Application JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
